@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="de">
-<!-- VibePrompter_v0.2-->
+<!-- VibePrompter_v0.3-->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -161,7 +161,7 @@
             line-height: 1.5;
             text-align: center;
             white-space: pre-wrap;
-            padding-bottom: 50vh; /* Extra Platz am Ende */
+            padding-bottom: 50vh;
         }
 
         .mirrored {
@@ -175,7 +175,7 @@
             left: 50%;
             transform: translateX(-50%);
             width: 60%;
-            height: 40px; /* Großes Touch-Target */
+            height: 40px;
             z-index: 104;
             accent-color: var(--accent-color);
             opacity: 0.4;
@@ -230,7 +230,7 @@
             </div>
             <div class="control-group">
                 <label>Geschwindigkeit <span id="val-speed">5</span></label>
-                <input type="range" id="slider-speed" min="1" max="20" value="5" step="0.5">
+                <input type="range" id="slider-speed" min="0.1" max="20" value="5" step="0.1">
             </div>
             <div class="control-group">
                 <label>Countdown (Sekunden) <span id="val-delay">3s</span></label>
@@ -312,7 +312,7 @@
             setupScreen.style.display = 'none';
             prompterScreen.style.display = 'block';
 
-            startSequence(false); // false = Startet komplett von vorne
+            startSequence(false);
         });
 
         // Exit Prompter
@@ -323,7 +323,7 @@
 
         // Pause / Resume durch Tippen
         prompterScreen.addEventListener('click', () => {
-            if (!isPlaying && countdownTimeoutId === null) return; // Verhindert Bug während dem Scrubben
+            if (!isPlaying && countdownTimeoutId === null) return; 
             
             isPaused = !isPaused;
             if (isPaused) {
@@ -335,44 +335,33 @@
             }
         });
 
-        // Verhindern, dass Touch/Click auf die Scrollbar den globalen Pause-Befehl auslöst
         ['click', 'mousedown', 'touchstart'].forEach(evt => {
             timelineScrubber.addEventListener(evt, (e) => e.stopPropagation());
         });
-
-        // --- NEU: Scrubber Logik ---
         
-        // Wenn der User an der Bar zieht
         timelineScrubber.addEventListener('input', (e) => {
             isScrubbing = true;
             isPlaying = false;
             isPaused = false;
             pauseIndicator.style.display = 'none';
             
-            // Laufende Animationen/Countdowns abbrechen
             cancelAnimationFrame(animationFrameId);
             clearTimeout(countdownTimeoutId);
             countdownBar.style.width = '0%';
             countdownBar.style.transition = 'none';
 
-            // Position berechnen
             const totalScrollDistance = window.innerHeight + textContainer.offsetHeight;
             const progress = e.target.value / 1000;
             currentY = window.innerHeight - (totalScrollDistance * progress);
             
-            // Text direkt verschieben
             textContainer.style.top = currentY + 'px';
         });
 
-        // Wenn der User die Bar loslässt
         timelineScrubber.addEventListener('change', () => {
             isScrubbing = false;
-            startSequence(true); // true = Weiter machen (nicht von vorne anfangen)
+            startSequence(true); 
         });
 
-
-        // --- Angepasste Start-Sequenz ---
-        // Parameter "resume": Wenn true, bleibt der Text wo er ist. Wenn false, springt er an den Start.
         function startSequence(resume = false) {
             isPaused = false;
             isPlaying = false;
@@ -390,7 +379,7 @@
                 countdownBar.style.transition = 'none';
                 countdownBar.style.width = '100%';
                 
-                void countdownBar.offsetWidth; // Force Reflow
+                void countdownBar.offsetWidth; 
 
                 countdownBar.style.transition = `width ${delaySeconds}s linear`;
                 countdownBar.style.width = '0%';
@@ -423,13 +412,11 @@
             currentY -= speedMultiplier * deltaTime;
             textContainer.style.top = currentY + 'px';
 
-            // Scrubber UI updaten
             const totalScrollDistance = window.innerHeight + textContainer.offsetHeight;
             const distanceTraveled = window.innerHeight - currentY;
             const progress = (distanceTraveled / totalScrollDistance) * 1000;
             timelineScrubber.value = Math.max(0, Math.min(1000, progress));
 
-            // Ende prüfen
             const textHeight = textContainer.offsetHeight;
             if (currentY < -textHeight) {
                 stopPrompter();
